@@ -23,8 +23,7 @@ export function SendMessageForm() {
     try {
       await api.post('messages', {
         message,
-      })
-
+      });
       setMessage('');
     } finally {
       setIsSendingMessage(false)

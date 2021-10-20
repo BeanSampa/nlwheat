@@ -1,28 +1,19 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react"
 import { api } from "../services/api";
 
-
 type AuthProviderProps = PropsWithChildren<{}>;
-
 type User = {
   id: string;
   name: string;
   login: string;
   avatar_url: string;
 }
-
 type AuthContextData = {
   user: User | null;
   isSigningIn: boolean;
   signInUrl: string;
   signOut: () => Promise<void>;
 }
-
-const AuthContext = createContext({} as AuthContextData);
-
-const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-const redirectUri = import.meta.env.VITE_GITHUB_CALLBACK_URL;
-
 type AuthResponse = {
   token: string;
   user: {
@@ -32,54 +23,55 @@ type AuthResponse = {
     login: string;
   }
 }
-
 type ProfileResponse = AuthResponse['user']
 
+const AuthContext = createContext({} as AuthContextData);
+const isDevMode = import.meta.env.DEV;
+const clientId = isDevMode ? '911e56cc28517c2e7fa3' : import.meta.env.VITE_GITHUB_CLIENT_ID;
+const redirectUri = isDevMode ? 'http://localhost:3000' :import.meta.env.VITE_GITHUB_CALLBACK_URL;
+const signInUrl = `https://github.com/login/oauth/authorize?scope=user&client_id=${clientId}&redirect_uri=${redirectUri}`
+  
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
 
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   async function signIn(code: string) {
-    setIsSigningIn(true);
-
     try {
       const response = await api.post<AuthResponse>('/authenticate', {
         code
       });
 
       const { token, user } = response.data;
-
+      
       localStorage.setItem('@dowhile:token', token)
-
       api.defaults.headers.common.authorization = `Bearer ${token}`
-
-      setUser(user)
+      setUser(user);
+      setIsSigningIn(true);
     } catch (err) {
-      console.log(err)
-    } finally {
-      setIsSigningIn(false);
+      signOut();
     }
   }
 
   async function signOut() {
     setUser(null)
-
+    setIsSigningIn(false);
     localStorage.removeItem('@dowhile:token')
   }
 
   useEffect(() => {
-    const token = localStorage.getItem('@dowhile:token')
-
+    const token = localStorage.getItem('@dowhile:token');
+    
     if (token) {
       api.defaults.headers.common.authorization = `Bearer ${token}`
 
       api.get<ProfileResponse>('/profile')
         .then(response => {
-          setUser(response.data)
+          setIsSigningIn(true);
+          setUser(response.data);
         })
         .catch(() => {
-          signOut()
+          signOut();
         });
     }
   }, [])
@@ -87,17 +79,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const url = window.location.href;
     const hasGithubCallbackCode = url.includes("?code=");
-
     if (hasGithubCallbackCode) {
       const [urlWithoutCode, githubAuthCode] = url.split("?code=");
-
       window.history.pushState({}, '', urlWithoutCode);
-
       signIn(githubAuthCode);
     }
   }, [])
-
-  const signInUrl = `https://github.com/login/oauth/authorize?scope=user&client_id=${clientId}&redirect_uri=${redirectUri}`
 
   return (
     <AuthContext.Provider value={{ user, isSigningIn, signInUrl, signOut }}>
@@ -108,6 +95,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-
   return context
 }

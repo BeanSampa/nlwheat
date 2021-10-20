@@ -15,11 +15,21 @@ type Message = {
   }
 }
 
+type NewMessage = {
+  id: string;
+  text: string;
+  user: {
+    name: string;
+    avatar_url: string;
+  }
+}
+
 let messagesQueue: Message[] = [];
 
 const socket = io('http://localhost:4000');
 
 socket.on('new_message', (newMessage) => {
+  newMessage.id = `fkid-${Math.random().toString(36).slice(2)}`;
   messagesQueue.push(newMessage);
 });
 
@@ -28,7 +38,9 @@ export function MessageList() {
 
   useEffect(() => {
     api.get<Message[]>('messages/last3').then(response => {
-      setMessages(response.data)
+      if (!(response.data.error)) {
+        setMessages(response.data)
+      }
     })
   }, [])
 
@@ -40,7 +52,6 @@ export function MessageList() {
           prevState[0], 
           prevState[1],
         ].filter(Boolean));
-
         messagesQueue.shift();
       }
     }, 3000);
@@ -50,7 +61,7 @@ export function MessageList() {
 
   return (
     <div className={styles.messageListWrapper}>
-      <img className={styles.logo} src={logoImg} alt="DoWhile 2021" />
+      <embed className={styles.logo} src={logoImg} />
 
       <ul className={styles.messageList}>
         {messages.map(message => {
