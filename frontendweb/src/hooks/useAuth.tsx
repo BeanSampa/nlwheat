@@ -10,7 +10,7 @@ type User = {
 }
 type AuthContextData = {
   user: User | null;
-  isSigningIn: boolean;
+  isLoading: boolean;
   signInUrl: string;
   signOut: () => Promise<void>;
 }
@@ -33,8 +33,7 @@ const signInUrl = `https://github.com/login/oauth/authorize?scope=user&client_id
   
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-
-  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
 
   async function signIn(code: string) {
     try {
@@ -47,7 +46,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem('@dowhile:token', token)
       api.defaults.headers.common.authorization = `Bearer ${token}`
       setUser(user);
-      setIsSigningIn(true);
+      setisLoading(true);
     } catch (err) {
       signOut();
     }
@@ -55,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function signOut() {
     setUser(null)
-    setIsSigningIn(false);
+    setisLoading(false);
     localStorage.removeItem('@dowhile:token')
   }
 
@@ -67,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       api.get<ProfileResponse>('/profile')
         .then(response => {
-          setIsSigningIn(true);
+          setisLoading(true);
           setUser(response.data);
         })
         .catch(() => {
@@ -87,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, isSigningIn, signInUrl, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, signInUrl, signOut }}>
       {children}
     </AuthContext.Provider>
   )

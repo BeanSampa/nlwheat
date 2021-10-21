@@ -5,12 +5,14 @@ import { SendMessageForm } from './components/SendMessageForm'
 import { useAuth } from './hooks/useAuth';
 
 export function App() {
-  const { user, isSigningIn } = useAuth();
+  const { user, isLoading } = useAuth();
+  //console.log('user = ', user);
+  //console.log('isLoading = ', isLoading);
   return (
     <div className="App">
-      <main className={`${(isSigningIn) ? styles.contentSigned : styles.contentWrapper}`} >
+      <main className={`${(isLoading) ? styles.contentWrapper : styles.contentSigned }`} >
         <MessageList />
-        { (isSigningIn) ? <SendMessageForm /> : <LoginBox /> }
+        { (isLoading) ? <SendMessageForm /> : <LoginBox /> }
       </main>
     </div>
   )
