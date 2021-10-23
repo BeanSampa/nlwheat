@@ -1,3 +1,8 @@
+# Backend Files
+backend/node_modules
+backend/.env
+backend/prisma/dev.db
+
 # FrontEndWeb Files
 frontendweb/node_modules
 frontendweb/.DS_Store
@@ -5,7 +10,28 @@ frontendweb/dist
 frontendweb/dist-ssr
 frontendweb/*.local
 
-# Backend Files
-backend/node_modules
-backend/.env
-backend/prisma/dev.db
+# FrontEndApp Files
+frontendapp/node_modules/
+frontendapp/.expo/
+frontendapp/npm-debug.*
+frontendapp/*.jks
+frontendapp/*.p8
+frontendapp/*.p12
+frontendapp/*.key
+frontendapp/*.mobileprovision
+frontendapp/*.orig.*
+frontendapp/web-build/
+
+#ElixirApp Files
+elixirapp/_build/
+elixirapp/cover/
+elixirapp/deps/
+elixirapp/doc/
+elixirapp/.fetch
+elixirapp/erl_crash.dump
+elixirapp/*.ez
+elixirapp/heat_tags-*.tar
+
+
+# macOS
+frontendapp/.DS_Store
